@@ -1,6 +1,6 @@
 # Second Brain
 
-A persistent personal knowledge graph that serves as the single source of truth across all your tools, agents, and workflows. Open MCP interface means any framework — current or future — can read and write to it. The brain outlives the tools.
+A persistent personal knowledge graph that serves as the single source of truth across all your tools, agents, and workflows. Built on ArcadeDB with an open MCP interface, any framework — current or future — can read and write to it. Conversations, documents, decisions, maps, and research are indexed into one queryable brain that outlives whatever tools you happen to be using today. New knowledge enters by dropping a file into a folder.
 
 ## Architecture
 
