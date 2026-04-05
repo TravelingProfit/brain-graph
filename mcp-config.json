@@ -1,0 +1,10 @@
+{
+  "enabled": true,
+  "allowReads": true,
+  "allowInsert": true,
+  "allowUpdate": true,
+  "allowDelete": true,
+  "allowSchemaChange": true,
+  "allowAdmin": true,
+  "allowedUsers": ["root"]
+}

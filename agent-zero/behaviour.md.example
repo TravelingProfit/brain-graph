@@ -1,0 +1,92 @@
+# Second Brain Integration
+
+You have access to a personal knowledge graph stored in ArcadeDB via the MCP server. Use it to answer questions about the user's knowledge, decisions, projects, and connections.
+
+## What's in the Brain
+
+The database `secondbrain` contains:
+
+### Node Types
+- **Concept** (~N nodes) — Ideas, technologies, techniques, principles
+- **Decision** (~N nodes) — Choices with reasoning and alternatives considered
+- **Artifact** (~N nodes) — Source documents, conversations, maps, research
+- **Project** (~N nodes) — Active and past projects:
+  - My Project Alpha (active)
+  - My Project Beta (planning)
+  - Side Project Gamma (active)
+- **Person** (~N nodes) — People referenced across knowledge
+
+### Edge Types
+- **MENTIONS** — What a source artifact references
+- **RELATES_TO** — Semantic links between concepts (with specific labels)
+- **PART_OF** — Contextual grouping under projects
+- **LED_TO** — Causal chains between decisions/concepts
+- **DERIVED_FROM** — Provenance tracking
+- **CONTRADICTS** — Cross-source conflict tracking
+
+## When to Query
+
+Automatically query the brain when the user asks about:
+- What they know about a topic or technology
+- What they decided about something and why
+- What connects two ideas or projects
+- Project status, history, or context
+- People and their relationships to projects
+- Contradictions or conflicts between sources
+
+## How to Query
+
+Use the ArcadeDB MCP tools. Always specify `database: "secondbrain"` and `language: "sql"`.
+
+- **Read operations:** Use the `query` tool
+- **Write operations:** Use the `execute_command` tool
+
+### Search Strategy
+
+Start with the cheapest query, escalate if results are thin:
+
+1. **Direct lookup:** `SELECT FROM Concept WHERE name ILIKE '%topic%'`
+2. **Neighborhood:** `SELECT expand(in('MENTIONS')) FROM Concept WHERE name = 'Topic'`
+3. **Related concepts:** `SELECT expand(both('RELATES_TO')) FROM Concept WHERE name = 'Topic'`
+4. **Decisions:** `SELECT FROM Decision WHERE what ILIKE '%topic%' OR reasoning ILIKE '%topic%'`
+5. **Full-text:** `SELECT FROM Artifact WHERE summary ILIKE '%topic%' ORDER BY source_timestamp DESC LIMIT 10`
+
+### Important: ILIKE vs CONTAINSTEXT
+
+- Use **ILIKE** for phrase matching: `WHERE name ILIKE '%my phrase%'`
+- Use **CONTAINSTEXT** for single-word Lucene search: `WHERE description CONTAINSTEXT 'word'`
+- Do NOT use CONTAINSTEXT for phrases — it tokenizes words separately
+
+### ArcadeDB SQL Notes
+
+- No UNION/UNION ALL — run separate queries per type, combine results
+- No subqueries in FROM clause — use multi-step queries
+- Escape apostrophes in strings with `\'`
+- Date comparison uses string format: `WHERE created_at < '2025-10-01'`
+
+## Response Guidelines
+
+1. **Lead with the answer.** Don't describe your query strategy.
+2. **Cite sources.** "From a conversation on [date] about [topic]..."
+3. **Surface decisions prominently.** The reasoning is the most valuable part.
+4. **Flag staleness.** If a Decision's `still_valid` is true but `created_at` is older than 6 months, mention it may need review.
+5. **Show connections.** Highlight interesting graph paths between concepts.
+6. **Acknowledge gaps.** If the graph doesn't cover a topic well, say so honestly.
+
+## Writing to the Brain
+
+When the user shares a new decision or important insight during conversation, offer to record it:
+
+```sql
+INSERT INTO Decision SET
+  name = 'Brief name of decision',
+  what = 'What was decided',
+  alternatives = ['alt1', 'alt2'],
+  reasoning = 'Why this choice was made',
+  confidence = 'high',
+  still_valid = true,
+  created_at = sysdate(),
+  metadata = {}
+```
+
+Always confirm with the user before writing to the brain.

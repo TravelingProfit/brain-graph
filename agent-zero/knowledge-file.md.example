@@ -1,0 +1,103 @@
+# Second Brain — Knowledge Reference
+
+## System Overview
+
+The Second Brain is a personal knowledge graph stored in ArcadeDB, accessible via MCP.
+
+- **Database:** `secondbrain`
+- **MCP endpoint:** `http://host.docker.internal:2480/api/v1/mcp` (from Docker) or `http://localhost:2480/api/v1/mcp` (from host)
+- **Transport:** streaming-http (JSON-RPC over HTTP POST)
+- **Auth:** HTTP Basic
+
+## Current Graph Statistics
+
+| Type | Count |
+|---|---|
+| Concepts | ~N |
+| Decisions | ~N |
+| Artifacts | ~N |
+| Projects | ~N |
+| Persons | ~N |
+| Total nodes | ~N |
+| Total edges | ~N |
+| Embeddings | ~N |
+
+## Projects in the Graph
+
+| Project | Status | Description |
+|---|---|---|
+| My Project Alpha | active | Description of project |
+| My Project Beta | planning | Description of project |
+| Side Project Gamma | active | Description of project |
+
+## Query Patterns
+
+### Find a concept
+```sql
+SELECT name, description FROM Concept WHERE name ILIKE '%search term%'
+```
+
+### Find decisions about a topic
+```sql
+SELECT name, what, reasoning, confidence FROM Decision
+WHERE name ILIKE '%topic%' OR what ILIKE '%topic%' OR reasoning ILIKE '%topic%'
+```
+
+### What artifacts mention a concept
+```sql
+SELECT expand(in('MENTIONS')) FROM Concept WHERE name = 'My Concept'
+```
+
+### Related concepts (1 hop)
+```sql
+SELECT expand(both('RELATES_TO')) FROM Concept WHERE name = 'My Concept'
+```
+
+### Everything linked to a project
+```sql
+SELECT expand(in('PART_OF')) FROM Project WHERE name = 'My Project'
+```
+
+### Shortest path between two nodes
+```sql
+SELECT shortestPath(
+  (SELECT FROM Concept WHERE name = 'Concept A'),
+  (SELECT FROM Concept WHERE name = 'Concept B'),
+  'BOTH'
+)
+```
+
+### Recent artifacts about a topic
+```sql
+SELECT name, summary, source_timestamp FROM Artifact
+WHERE summary ILIKE '%topic%' ORDER BY source_timestamp DESC LIMIT 10
+```
+
+### Health checks
+```sql
+-- Most connected concepts
+SELECT name, both().size() AS connections FROM Concept ORDER BY connections DESC LIMIT 20
+
+-- Orphan nodes
+SELECT name FROM Concept WHERE both().size() = 0
+
+-- Source distribution
+SELECT source_type, count(*) as cnt FROM Artifact GROUP BY source_type ORDER BY cnt DESC
+```
+
+## Data Sources
+
+| Source | Type | Notes |
+|---|---|---|
+| Project docs | markdown | Highest signal — core Concepts and Decisions |
+| AI conversations | JSON | Variable signal — triaged as DEEP/LIGHT/SKIP |
+| Maps exports | CSV | Saved places with notes and pricing |
+| Curated notes | markdown | Pre-filtered, high trust |
+
+## ArcadeDB Quirks
+
+- **No UNION** — query each type separately, combine in code
+- **ILIKE for phrases** — `CONTAINSTEXT` tokenizes words, misses phrases
+- **Single-field Lucene indexes** — multi-field FULL_TEXT may not backfill existing data
+- **Apostrophe escaping** — use `\'` in SQL strings
+- **No `SELECT FROM V`** — must query each vertex type by name

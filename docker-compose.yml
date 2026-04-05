@@ -1,0 +1,12 @@
+services:
+  arcadedb:
+    image: arcadedata/arcadedb:latest
+    ports:
+      - "2480:2480"
+      - "2424:2424"
+    volumes:
+      - ./data:/home/arcadedb/databases
+      - ./mcp-config.json:/home/arcadedb/config/mcp-config.json
+    environment:
+      - JAVA_OPTS=-Darcadedb.server.rootPassword=${ARCADEDB_PASSWORD}
+    restart: unless-stopped

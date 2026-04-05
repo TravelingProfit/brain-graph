@@ -1,0 +1,20 @@
+# Credentials
+.env
+
+# Extracted personal data
+extractions/
+
+# Python
+*.pyc
+__pycache__/
+
+# ArcadeDB data
+data/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/

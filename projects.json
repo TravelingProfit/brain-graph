@@ -1,0 +1,33 @@
+{
+    "_comment": "Define your projects and their aliases for automatic matching during ingestion.",
+    "projects": {
+        "My Project": {
+            "aliases": ["my project", "my proj"],
+            "description": "Description of your first project"
+        },
+        "Side Business": {
+            "aliases": ["side business", "side biz"],
+            "description": "Description of your side business"
+        }
+    },
+    "concept_keywords": {
+        "_comment": "Map keywords to concept names for edge creation. Add your tech stack, tools, and domain terms.",
+        "docker": "Docker",
+        "kubernetes": "Kubernetes",
+        "python": "Python",
+        "llm": "LLM",
+        "ai agent": "AI Agent"
+    },
+    "location_rules": {
+        "_comment": "For maps processing: if a list name contains a key, create a MENTIONS edge.",
+        "example-city": {
+            "to_type": "Project",
+            "to_name": "My Project",
+            "context": "Location scouting"
+        }
+    },
+    "notebook_mappings": {
+        "_comment": "Map NotebookLM folder name prefixes to project names.",
+        "Research Notes": "My Project"
+    }
+}
